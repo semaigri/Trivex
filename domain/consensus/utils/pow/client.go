@@ -1,6 +1,6 @@
-//go:generate ../.bin/gen-lookup -package kawpow -mixBytes 128 -cacheInit 16777216 -cacheGrowth 131072 -datasetInit 1073741824 -datasetGrowth 8388608
+//go:generate ../.bin/gen-lookup -package firopow -mixBytes 128 -cacheInit 16777216 -cacheGrowth 131072 -datasetInit 1610612736 -datasetGrowth 8388608
 
-package kawpow
+package firopow
 
 import (
 	"fmt"
@@ -22,13 +22,13 @@ func New(cfg dag.Config) *Client {
 	return client
 }
 
-func NewRavencoin() *Client {
+func NewFiro() *Client {
 	var cfg = dag.Config{
-		Name:       "RVN",
+		Name:       "FIRO",
 		Revision:   23,
 		StorageDir: common.DefaultDir(".powcache"),
 
-		DatasetInitBytes:   1 << 30,
+		DatasetInitBytes:   (1 << 30) + (1 << 29),
 		DatasetGrowthBytes: 1 << 23,
 		CacheInitBytes:     1 << 24,
 		CacheGrowthBytes:   1 << 17,
@@ -38,8 +38,8 @@ func NewRavencoin() *Client {
 
 		MixBytes:        128,
 		DatasetParents:  512,
-		EpochLength:     7500,
-		SeedEpochLength: 7500,
+		EpochLength:     1300,
+		SeedEpochLength: 1300,
 
 		CacheRounds:    3,
 		CachesCount:    3,
@@ -63,7 +63,7 @@ func (c *Client) Compute(hash []byte, height, nonce uint64) ([]byte, []byte, err
 	cache := c.data.GetCache(epoch)
 	lookup := c.data.NewLookupFunc2048(cache, epoch)
 
-	mix, digest := kawpow(hash, height, nonce, size, lookup, cache.L1())
+	mix, digest := firopow(hash, height, nonce, size, lookup, cache.L1())
 	runtime.KeepAlive(cache)
 
 	return mix, digest, nil
